@@ -1,13 +1,26 @@
-# 第一阶段：编译构建
-FROM node:22-alpine AS builder
+# 阶段 1: 构建环境
+FROM node:22-slim AS builder
+
+# 安装 Python 及构建工具（如 node-gyp 依赖）
+RUN apt-get update && apt-get install -y \
+    python3 \
+    make \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 COPY . .
-# 根据 README 推测的标准构建流程
-RUN npm install && npm run build
 
-# 第二阶段：生产环境（保持镜像极小）
-FROM nginx:alpine
-# 将构建产物拷贝到 Nginx 默认目录
-COPY --from=builder /app/dist /usr/share/nginx/html
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+# 执行构建逻辑
+RUN npm install
+RUN npm run build
+
+# 阶段 2: 运行环境
+FROM node:22-slim
+WORKDIR /app
+# 仅从构建阶段拷贝产物，保持镜像精简
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package.json ./package.json
+
+EXPOSE 3000
+CMD ["npm", "run", "preview"]
