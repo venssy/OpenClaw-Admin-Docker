@@ -21,6 +21,9 @@ WORKDIR /app
 # 仅从构建阶段拷贝产物，保持镜像精简
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/data ./data
+COPY --from=builder /app/server ./server
+COPY --from=builder /app/.env.example ./.env
 
 EXPOSE 3000
 CMD ["npm", "run", "preview"]
