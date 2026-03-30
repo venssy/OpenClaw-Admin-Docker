@@ -1,4 +1,4 @@
-name: Node22 Build to GHCR
+name: Build with Remote Source and Local Dockerfile
 
 on:
   push:
@@ -13,22 +13,31 @@ jobs:
       packages: write
 
     steps:
-      - name: Checkout Source
+      # 1. 检出远程仓库源码 (OpenClaw-Admin)
+      - name: Checkout Remote Source
         uses: actions/checkout@v4
         with:
           repository: 'itq5/OpenClaw-Admin'
+          path: './source' # 源码放在 source 文件夹
 
-      - name: Log in to GHCR
+      # 2. 检出当前仓库 (包含你的 Dockerfile)
+      - name: Checkout Local Config
+        uses: actions/checkout@v4
+        with:
+          path: './config' # 配置文件放在 config 文件夹
+
+      # 3. 移动 Dockerfile 到源码目录并构建
+      - name: Build and Push
+        uses: docker/build-push-action@v5
+        with:
+          context: ./source  # 构建上下文设为源码目录
+          file: ./config/Dockerfile # 指定使用你仓库里的 Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/openclaw-admin:latest
+
+      - name: Login to GHCR
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and Push
-        uses: docker/build-push-action@v5
-        with:
-          context: . # 指向拉取后的源码根目录
-          file: ./Dockerfile # 使用你刚创建的 Dockerfile
-          push: true
-          tags: ghcr.io/${{ github.repository_owner }}/openclaw-admin:latest
