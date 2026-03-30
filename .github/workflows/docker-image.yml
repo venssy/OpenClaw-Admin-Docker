@@ -26,6 +26,13 @@ jobs:
         with:
           path: './config' # 配置文件放在 config 文件夹
 
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          
       # 3. 移动 Dockerfile 到源码目录并构建
       - name: Build and Push
         uses: docker/build-push-action@v5
@@ -35,9 +42,3 @@ jobs:
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/openclaw-admin:latest
 
-      - name: Login to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
