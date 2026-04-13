@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 COPY . .
 
-RUN sed -i '/const _rpcMethodWhitelist = new Set/a    "cron.list", "models.list", "skills.status", "usage.cost", "sessions.usage", ' server/index.js
+RUN ls -al && sed -i '/const _rpcMethodWhitelist = new Set/a    "cron.list", "models.list", "skills.status", "usage.cost", "sessions.usage", ' server/index.js
 
 # 执行构建逻辑
 RUN npm install
